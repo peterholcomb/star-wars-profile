@@ -1,36 +1,186 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# Star Wars Profiles
 
-## Getting Started
+A simple ui built with NextJS 14, TailwindCSS and SWAPI to display Star Wars characters. This app utilizes the SWAPI (Star 
+Wars API) to fetch data about Star Wars characters and display them in a simple UI.  Data is fetched using the [Tanstack 
+Query](https://tanstack.com/query/latest/docs/framework/react/overview) library using Suspense.
 
-First, run the development server:
+To run the app:
 
-```bash
+```
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+The app should open to `http://localhost:3000`
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Sample Graphql Schema
+A sample graphql schema for fetching and mutating the Person and Species entities is provided below.  I've included 
+only queries and mutations that apply to a Person and Species entity and left out the types for things like plantes, films, etc...
 
-This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
+### Types
+```graphql
+type Person {
+    name: String!
+    height: String
+    mass: String
+    hairColor: String
+    skinColor: String
+    eyeColor: String
+    birthYear: String
+    gender: String
+    species: Species
+    created: String
+    edited: String
+    url: String
+}
 
-## Learn More
+type Species {
+    name: String!
+    classification: String
+    designation: String
+    averageHeight: String
+    skinColors: String
+    hairColors: String
+    eyeColors: String
+    averageLifespan: String
+    language: String
+    people: [Person]
+    created: String
+    edited: String
+    url: String
+}
+```
 
-To learn more about Next.js, take a look at the following resources:
+```graphql
+query SearchPersons($name: String!) {
+    persons(filter: { name: $name }) {
+        name
+        height
+        mass
+        hairColor
+        skinColor
+        eyeColor
+        birthYear
+        gender
+        species {
+            name
+            classification
+            averageHeight
+            averageLifespan
+            language
+            designation
+            skinColors
+            hairColors
+            eyeColors
+            created
+            edited
+            url
+        }
+        created
+        edited
+        url
+    }
+}
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+query GetPerson($id: ID!) {
+    person(id: $id) {
+        name
+        height
+        mass
+        hairColor
+        skinColor
+        eyeColor
+        birthYear
+        gender
+        species {
+            name
+            classification
+            designation
+            averageHeight
+            skinColors
+            hairColors
+            eyeColors
+            averageLifespan
+            language
+        }
+    }
+}
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
+input CreatePersonInput {
+  name: String!
+  height: String
+  mass: String
+  hairColor: String
+  skinColor: String
+  eyeColor: String
+  birthYear: String
+  gender: String
+  homeworld: String
+  species: String! // References the url of the species we want to assign to the user
+}
 
-## Deploy on Vercel
+input UpdatePersonInput {
+  id: ID!
+  name: String!
+  height: String
+  mass: String
+  hairColor: String
+  skinColor: String
+  eyeColor: String
+  birthYear: String
+  gender: String
+  homeworld: String
+  species: String // References the url of the species we want to change the user to if we are changing the species
+}
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+type Mutation {
+  updatePerson(input: UpdatePersonInput!): Person
+}
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+type Mutation {
+  createPerson(input: CreatePersonInput!): Person
+}
+```
+
+### DynamoDB Schema
+
+The following is a sample DynamoDB schema for storing the data for the Star Wars characters.  The schema is designed to
+allow for querying by name and by species.  Each entity has a unique identifier and a secondary index for querying by name.
+
+#### Person Table
+Partition Key: personId (String) - Unique identifier for a person.
+Global Secondary Index: nameIndex (String) - Index for searching by name.
+
+Attributes:
+
+* name (String)
+* height (String)
+* mass (String)
+* hairColor (String)
+* skinColor (String)
+* eyeColor (String)
+* birthYear (String)
+* gender (String)
+* homeworld (String) - ID of the Planet
+* species (String) - ID of the Species
+* films (List of Strings) - IDs of the Films associated with this Person
+
+#### Species Table
+Partition Key: speciesId (String) - Unique identifier for a species.
+Global Secondary Index: nameIndex (String) - Index for searching by name.  
+
+Attributes:
+
+* name (String)
+* classification (String)
+* designation (String)
+* averageHeight (String)
+* skinColors (String)
+* hairColors (String)
+* eyeColors (String)
+* averageLifespan (String)
+* language (String)
+* homeworld (String) - ID of the Planet associated with this Species
+* people (List of Strings) - IDs of the People associated with this Species
+* films (List of Strings) - IDs of the Films associated with this Species
+
