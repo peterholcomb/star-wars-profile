@@ -116,7 +116,7 @@ input CreatePersonInput {
   birthYear: String
   gender: String
   homeworld: String
-  species: String! // References the url of the species we want to assign to the user
+  species: String! // References the id of the species we want to assign to the user
 }
 
 input UpdatePersonInput {
@@ -130,7 +130,7 @@ input UpdatePersonInput {
   birthYear: String
   gender: String
   homeworld: String
-  species: String // References the url of the species we want to change the user to if we are changing the species
+  species: String // References the id of the species we want to change the user to if we are changing the species
 }
 
 type Mutation {
