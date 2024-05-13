@@ -8,7 +8,7 @@ const getPersonId = (url: string) => {
 };
 
 export const PersonGrid = ({ searchTerm }: { searchTerm: string }) => {
-  const { data: people, isLoading } = useSearchCharacters(searchTerm);
+  const { data: people } = useSearchCharacters(searchTerm);
 
   return (
     <ul
